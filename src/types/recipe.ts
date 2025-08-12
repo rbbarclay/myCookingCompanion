@@ -1,6 +1,13 @@
+export interface Ingredient {
+  name: string;
+  amount: number;
+  unit: string;
+  cost: number;
+}
+
 export interface Recipe {
   id: string;
-  title: string;
+  name: string;
   description: string;
   image: string;
   prepTime: number;
@@ -8,26 +15,19 @@ export interface Recipe {
   servings: number;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   estimatedCost: number;
-  category: string;
-  categoryDescription?: string;
   ingredients: Ingredient[];
   instructions: string[];
   tags: string[];
-  nutritionInfo?: {
+  dietary: string[];
+  mealType: string[];
+  categoryId: string;
+  tips?: string[];
+  nutrition?: {
     calories: number;
     protein: number;
     carbs: number;
     fat: number;
   };
-}
-
-export interface Ingredient {
-  id: string;
-  name: string;
-  amount: string;
-  unit: string;
-  cost: number;
-  essential: boolean;
 }
 
 export interface FilterOptions {
@@ -38,7 +38,7 @@ export interface FilterOptions {
   mealType: string[];
 }
 
-export interface RecipeCategory {
+export interface Category {
   id: string;
   name: string;
   description: string;

@@ -6,8 +6,8 @@ export const useRecipes = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterOptions>({
-    maxCost: 10,
-    maxTime: 60,
+    maxCost: 15,
+    maxTime: 120,
     difficulty: [],
     dietary: [],
     mealType: []
@@ -16,40 +16,59 @@ export const useRecipes = () => {
   const filteredRecipes = useMemo(() => {
     return recipes.filter(recipe => {
       // Category filter
-      const matchesCategory = selectedCategory === null || recipe.category === selectedCategory;
+      if (selectedCategory && recipe.categoryId !== selectedCategory) {
+        return false;
+      }
 
       // Search filter
-      const matchesSearch = searchTerm === '' || 
-        recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        recipe.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        recipe.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        recipe.ingredients.some(ingredient => 
-          ingredient.name.toLowerCase().includes(searchTerm.toLowerCase())
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        const matchesName = recipe.name.toLowerCase().includes(searchLower);
+        const matchesDescription = recipe.description.toLowerCase().includes(searchLower);
+        const matchesTags = recipe.tags.some(tag => tag.toLowerCase().includes(searchLower));
+        const matchesIngredients = recipe.ingredients.some(ingredient => 
+          ingredient.name.toLowerCase().includes(searchLower)
         );
+        
+        if (!matchesName && !matchesDescription && !matchesTags && !matchesIngredients) {
+          return false;
+        }
+      }
 
       // Cost filter
-      const matchesCost = recipe.estimatedCost <= filters.maxCost;
+      if (recipe.estimatedCost > filters.maxCost) {
+        return false;
+      }
 
       // Time filter
-      const totalTime = recipe.prepTime + recipe.cookTime;
-      const matchesTime = totalTime <= filters.maxTime;
+      if ((recipe.prepTime + recipe.cookTime) > filters.maxTime) {
+        return false;
+      }
 
       // Difficulty filter
-      const matchesDifficulty = filters.difficulty.length === 0 || 
-        filters.difficulty.includes(recipe.difficulty);
+      if (filters.difficulty.length > 0 && !filters.difficulty.includes(recipe.difficulty)) {
+        return false;
+      }
 
       // Dietary filter
-      const matchesDietary = filters.dietary.length === 0 ||
-        filters.dietary.some(dietary => recipe.tags.includes(dietary));
+      if (filters.dietary.length > 0) {
+        const hasMatchingDietary = filters.dietary.some(diet => recipe.dietary.includes(diet));
+        if (!hasMatchingDietary) {
+          return false;
+        }
+      }
 
       // Meal type filter
-      const matchesMealType = filters.mealType.length === 0 ||
-        filters.mealType.some(mealType => recipe.tags.includes(mealType));
+      if (filters.mealType.length > 0) {
+        const hasMatchingMealType = filters.mealType.some(meal => recipe.mealType.includes(meal));
+        if (!hasMatchingMealType) {
+          return false;
+        }
+      }
 
-      return matchesSearch && matchesCost && matchesTime && 
-             matchesDifficulty && matchesDietary && matchesMealType && matchesCategory;
+      return true;
     });
-  }, [searchTerm, filters, selectedCategory]);
+  }, [searchTerm, selectedCategory, filters]);
 
   return {
     recipes: filteredRecipes,
