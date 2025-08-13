@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState } from 'react';
 import { Header } from './components/Header';
 import { SearchBar } from './components/SearchBar';
@@ -6,6 +5,8 @@ import { FilterPanel } from './components/FilterPanel';
 import { CategoryGrid } from './components/CategoryGrid';
 import { RecipeCard } from './components/RecipeCard';
 import { RecipeModal } from './components/RecipeModal';
+import { RecipeManager } from './components/RecipeManager';
+import { OfflineBanner, ConnectionToast } from './components/OfflineBanner';
 import { useRecipes } from './hooks/useRecipes';
 import { Recipe } from './types/recipe';
 import { getCategoryById } from './data/categories';
@@ -26,6 +27,7 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showCategories, setShowCategories] = useState(true);
+  const [showRecipeManager, setShowRecipeManager] = useState(false);
 
   const handleRecipeClick = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
@@ -46,9 +48,12 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header onManageRecipes={() => setShowRecipeManager(true)} />
       
       <main className="max-w-7xl mx-auto px-4 py-8">
+        {/* Offline Banner */}
+        <OfflineBanner className="mb-6" />
+        
         {showCategories ? (
           <CategoryGrid
             recipes={recipes}
@@ -139,6 +144,14 @@ function App() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
       />
+      
+      <RecipeManager
+        isOpen={showRecipeManager}
+        onClose={() => setShowRecipeManager(false)}
+      />
+      
+      {/* Connection status toast */}
+      <ConnectionToast />
     </div>
   );
 }

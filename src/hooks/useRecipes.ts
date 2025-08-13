@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Recipe, FilterOptions } from '../types/recipe';
+import { FilterOptions } from '../types/recipe';
 import { recipes } from '../data/recipes';
 
 export const useRecipes = () => {

@@ -1,7 +1,9 @@
 import React from 'react';
-import { Clock, DollarSign, Users, ChefHat } from 'lucide-react';
+import { Clock, Users, ChefHat, Download, Wifi } from 'lucide-react';
 import { Recipe } from '../types/recipe';
 import { getCategoryById } from '../data/categories';
+import { useCachedImage } from '../utils/image-cache';
+import { useOffline } from '../hooks/useOffline';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -10,6 +12,8 @@ interface RecipeCardProps {
 
 export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onClick }) => {
   const category = getCategoryById(recipe.categoryId);
+  const { imageUrl, isCached, isLoading } = useCachedImage(recipe.image, true);
+  const { isOffline } = useOffline();
   
   return (
     <div 
@@ -18,19 +22,41 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onClick }) => {
     >
       <div className="relative">
         <img 
-          src={recipe.image} 
+          src={imageUrl} 
           alt={recipe.name}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          className={`w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300 ${
+            isLoading ? 'opacity-75' : ''
+          }`}
         />
-        <div className="absolute top-3 left-3">
+        
+        {/* Offline/Cache indicators */}
+        <div className="absolute top-3 left-3 flex gap-2">
           <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${category?.bgColor} ${category?.color}`}>
             <span>{category?.icon}</span>
             {category?.name}
           </span>
+          
+          {/* Offline indicator */}
+          {(isCached || isOffline) && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              {isCached ? <Download className="w-3 h-3" /> : <Wifi className="w-3 h-3" />}
+              {isCached ? 'Saved' : 'Online'}
+            </span>
+          )}
         </div>
+        
         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1">
           <span className="text-sm font-bold text-green-600">${recipe.estimatedCost.toFixed(2)}</span>
         </div>
+        
+        {/* Loading indicator */}
+        {isLoading && (
+          <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
+            <div className="bg-white/90 rounded-full p-2">
+              <Download className="w-4 h-4 text-blue-600 animate-pulse" />
+            </div>
+          </div>
+        )}
       </div>
       
       <div className="p-4">
